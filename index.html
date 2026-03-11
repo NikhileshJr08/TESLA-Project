@@ -1,0 +1,1712 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>VIN Order Analytics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500&display=swap"
+    rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #050b14;
+      --surface: #0a1220;
+      --surface2: #0f1a2e;
+      --border: #162035;
+      --border2: #1e2d45;
+      --text: #e2e8f0;
+      --muted: #475569;
+      --dim: #2a3a52;
+      --blue: #3b82f6;
+      --purple: #8b5cf6;
+      --teal: #14b8a6;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --green: #22c55e;
+      --a: #38bdf8;
+      --b: #a78bfa;
+      --c: #34d399;
+      --d: #fb923c;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    html,
+    body {
+      height: 100%;
+      overflow: hidden
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column
+    }
+
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg)
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border2);
+      border-radius: 2px
+    }
+
+    /* ── HEADER ── */
+    #hdr {
+      height: 50px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      flex-shrink: 0
+    }
+
+    .hdr-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .hdr-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 7px;
+      background: linear-gradient(135deg, #1d4ed8, #7c3aed);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 800;
+      color: #fff;
+      font-family: 'Syne', sans-serif
+    }
+
+    .hdr-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      color: var(--text)
+    }
+
+    .hdr-sub {
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-top: 1px
+    }
+
+    .hdr-right {
+      display: flex;
+      align-items: center;
+      gap: 12px
+    }
+
+    .hdr-kpi {
+      font-size: 11px;
+      color: var(--muted);
+      padding: 0 12px;
+      border-left: 1px solid var(--border)
+    }
+
+    .hdr-kpi span {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      margin-right: 4px
+    }
+
+    #scenario-toggle {
+      background: linear-gradient(135deg, #7c3aed, #2563eb);
+      border: none;
+      border-radius: 6px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      padding: 5px 13px;
+      font-family: 'Syne', sans-serif;
+      transition: opacity .2s;
+      text-transform: uppercase
+    }
+
+    #scenario-toggle:hover {
+      opacity: .82
+    }
+
+    /* ── LAYOUT ── */
+    #body {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+      position: relative
+    }
+
+    /* ── DASHBOARD PANEL ── */
+    #dash {
+      width: 380px;
+      min-width: 340px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0
+    }
+
+    #dash-scroll {
+      overflow-y: auto;
+      flex: 1;
+      padding: 16px
+    }
+
+    .dash-hdr {
+      padding: 13px 16px 0;
+      font-family: 'Syne', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      color: var(--muted);
+      text-transform: uppercase;
+      flex-shrink: 0;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px
+    }
+
+    /* Section headings inside dashboard */
+    .sec {
+      margin-bottom: 20px
+    }
+
+    .sec-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .sec-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border)
+    }
+
+    /* KPI cards row */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 20px
+    }
+
+    .kpi {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      position: relative;
+      overflow: hidden
+    }
+
+    .kpi::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px
+    }
+
+    .kpi.blue::before {
+      background: var(--blue)
+    }
+
+    .kpi.red::before {
+      background: var(--red)
+    }
+
+    .kpi.green::before {
+      background: var(--green)
+    }
+
+    .kpi.amber::before {
+      background: var(--amber)
+    }
+
+    .kpi-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 26px;
+      font-weight: 600;
+      line-height: 1
+    }
+
+    .kpi-label {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 4px;
+      letter-spacing: .04em
+    }
+
+    .kpi-sub {
+      font-size: 10px;
+      color: var(--dim);
+      margin-top: 2px;
+      font-family: 'JetBrains Mono', monospace
+    }
+
+    /* SVG charts */
+    .chart-wrap {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 20px
+    }
+
+    .chart-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 12px
+    }
+
+    svg.chart {
+      width: 100%;
+      display: block;
+      overflow: visible
+    }
+
+    .chart-bar-bg {
+      fill: var(--border2)
+    }
+
+    .chart-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      fill: var(--muted)
+    }
+
+    .chart-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      fill: var(--text)
+    }
+
+    .chart-pct {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px
+    }
+
+    /* Data tables */
+    .dt {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px
+    }
+
+    .dt th {
+      padding: 5px 8px;
+      text-align: left;
+      font-size: 9px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      letter-spacing: .08em;
+      color: var(--muted);
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border2);
+      white-space: nowrap
+    }
+
+    .dt td {
+      padding: 6px 8px;
+      border-bottom: 1px solid var(--border);
+      color: #94a3b8;
+      vertical-align: middle
+    }
+
+    .dt tr:last-child td {
+      border-bottom: none
+    }
+
+    .dt tr:hover td {
+      background: var(--surface2)
+    }
+
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 1px 7px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      letter-spacing: .03em
+    }
+
+    .pill-red {
+      background: #ef444420;
+      color: #ef4444;
+      border: 1px solid #ef444440
+    }
+
+    .pill-grn {
+      background: #22c55e20;
+      color: #22c55e;
+      border: 1px solid #22c55e40
+    }
+
+    .pill-amb {
+      background: #f59e0b20;
+      color: #f59e0b;
+      border: 1px solid #f59e0b40
+    }
+
+    /* Donut / radial */
+    .donut-wrap {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 4px
+    }
+
+    .donut-legend {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px
+    }
+
+    .dl-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px
+    }
+
+    .dl-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-right: 6px
+    }
+
+    /* Timeline mini chart */
+    .tl-bar {
+      transition: opacity .15s
+    }
+
+    .tl-bar:hover {
+      opacity: .75
+    }
+
+    /* ── CHAT ── */
+    #chat {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: margin-right .35s ease
+    }
+
+    #messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 18px 22px 0
+    }
+
+    .msg {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 18px
+    }
+
+    .msg.user {
+      align-items: flex-end
+    }
+
+    .msg.bot {
+      align-items: flex-start
+    }
+
+    .bot-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 7px
+    }
+
+    .bot-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 7px;
+      background: linear-gradient(135deg, #1d4ed8, #7c3aed);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
+      color: #fff;
+      font-family: 'Syne', sans-serif
+    }
+
+    .bot-name {
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      font-family: 'Syne', sans-serif
+    }
+
+    .bubble {
+      max-width: 88%;
+      border-radius: 14px;
+      padding: 11px 15px;
+      font-size: 13px;
+      line-height: 1.65
+    }
+
+    .bubble.user {
+      background: linear-gradient(135deg, #1e3a5f, #1e3355);
+      border: 1px solid #2d5a8e;
+      border-radius: 14px 14px 3px 14px;
+      color: #bfdbfe
+    }
+
+    .bubble.bot {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 3px 14px 14px 14px;
+      color: #94a3b8
+    }
+
+    .typing {
+      display: flex;
+      gap: 5px;
+      padding: 3px 0
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--blue);
+      animation: pulse 1.2s ease-in-out infinite
+    }
+
+    .dot:nth-child(2) {
+      animation-delay: .2s
+    }
+
+    .dot:nth-child(3) {
+      animation-delay: .4s
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: .3;
+        transform: scale(.8)
+      }
+
+      50% {
+        opacity: 1;
+        transform: scale(1)
+      }
+    }
+
+    /* Analysis card in chat */
+    .acard {
+      margin-top: 10px;
+      background: #0d1526;
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      padding: 13px;
+      font-size: 12px;
+      max-width: 96%
+    }
+
+    .stat-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px
+    }
+
+    .stat-box {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 7px;
+      padding: 9px 12px;
+      min-width: 80px
+    }
+
+    .stat-num {
+      font-size: 20px;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace
+    }
+
+    .stat-lbl {
+      font-size: 9px;
+      color: var(--muted);
+      margin-top: 2px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      font-family: 'Syne', sans-serif
+    }
+
+    .bar-row {
+      margin-bottom: 7px
+    }
+
+    .bar-meta {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 3px;
+      align-items: center
+    }
+
+    .bar-track {
+      height: 3px;
+      background: var(--border2);
+      border-radius: 2px;
+      overflow: hidden
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width .6s ease
+    }
+
+    .expand-btn {
+      background: none;
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      color: var(--blue);
+      cursor: pointer;
+      font-size: 11px;
+      padding: 5px 11px;
+      letter-spacing: .04em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 9px;
+      font-family: 'Syne', sans-serif;
+      transition: all .15s
+    }
+
+    .expand-btn:hover {
+      border-color: var(--blue);
+      background: var(--surface2)
+    }
+
+    .dtbl {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+      margin-top: 8px
+    }
+
+    .dtbl th {
+      padding: 4px 7px;
+      text-align: left;
+      color: var(--muted);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      border-bottom: 1px solid var(--border2);
+      font-family: 'Syne', sans-serif
+    }
+
+    .dtbl td {
+      padding: 5px 7px;
+      border-bottom: 1px solid #0f1929;
+      color: #94a3b8
+    }
+
+    .dtbl td.mono {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px
+    }
+
+    .trace-chip {
+      font-size: 9px;
+      color: var(--muted);
+      margin-right: 4px
+    }
+
+    /* Examples + input */
+    #examples {
+      padding: 7px 22px;
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      border-top: 1px solid var(--border)
+    }
+
+    .ex-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 18px;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 10px;
+      padding: 3px 11px;
+      transition: all .15s;
+      font-family: 'Syne', sans-serif;
+      white-space: nowrap;
+      letter-spacing: .03em
+    }
+
+    .ex-btn:hover {
+      border-color: var(--blue);
+      color: #93c5fd
+    }
+
+    .ex-btn:disabled {
+      opacity: .4;
+      cursor: default
+    }
+
+    #input-row {
+      padding: 9px 22px 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 9px;
+      align-items: flex-end
+    }
+
+    #query-input {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 9px;
+      color: var(--text);
+      font-size: 13px;
+      padding: 9px 13px;
+      resize: none;
+      outline: none;
+      font-family: 'Inter', sans-serif;
+      line-height: 1.5;
+      transition: border-color .2s
+    }
+
+    #query-input:focus {
+      border-color: var(--blue)
+    }
+
+    #send-btn {
+      height: 50px;
+      padding: 0 18px;
+      border-radius: 9px;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      transition: all .2s;
+      font-family: 'Syne', sans-serif;
+      white-space: nowrap
+    }
+
+    #send-btn.active {
+      background: linear-gradient(135deg, #1d4ed8, #7c3aed)
+    }
+
+    #send-btn.inactive {
+      background: var(--border2);
+      color: var(--dim);
+      cursor: default
+    }
+
+    /* ── SCENARIO PANEL ── */
+    #sc-panel {
+      width: 420px;
+      min-width: 380px;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      font-size: 12px;
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      transform: translateX(100%);
+      transition: transform .35s ease;
+      z-index: 10
+    }
+
+    #sc-panel.open {
+      transform: translateX(0)
+    }
+
+    .sc-hdr {
+      padding: 13px 15px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0
+    }
+
+    .sc-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      color: var(--text)
+    }
+
+    .sc-close {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 17px;
+      padding: 2px 6px
+    }
+
+    .sc-close:hover {
+      color: var(--text)
+    }
+
+    #sc-body {
+      overflow-y: auto;
+      flex: 1;
+      padding: 14px 15px
+    }
+
+    .sc-sec {
+      margin-bottom: 16px
+    }
+
+    .sc-sec-title {
+      font-size: 9px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      letter-spacing: .1em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px
+    }
+
+    .sc-sec-title span {
+      flex: 1;
+      height: 1px;
+      background: var(--border)
+    }
+
+    .adj-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      margin-bottom: 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 7px 9px
+    }
+
+    .adj-sel {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 5px;
+      color: var(--text);
+      font-size: 11px;
+      padding: 3px 6px;
+      font-family: 'Syne', sans-serif;
+      outline: none;
+      flex: 1
+    }
+
+    .adj-num {
+      width: 58px;
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 5px;
+      color: var(--green);
+      text-align: center;
+      padding: 3px 4px;
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      outline: none
+    }
+
+    .adj-num.tr {
+      color: #38bdf8
+    }
+
+    .adj-lbl {
+      font-size: 9px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      white-space: nowrap
+    }
+
+    .adj-rm {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 14px;
+      transition: color .15s
+    }
+
+    .adj-rm:hover {
+      color: var(--red)
+    }
+
+    .add-adj {
+      width: 100%;
+      background: none;
+      border: 1px dashed var(--border2);
+      border-radius: 7px;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 11px;
+      padding: 7px;
+      font-family: 'Syne', sans-serif;
+      transition: all .15s
+    }
+
+    .add-adj:hover {
+      border-color: var(--blue);
+      color: #93c5fd
+    }
+
+    .run-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #1d4ed8, #7c3aed);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      padding: 10px;
+      font-family: 'Syne', sans-serif;
+      transition: opacity .2s;
+      margin-top: 4px
+    }
+
+    .run-btn:hover {
+      opacity: .85
+    }
+
+    .run-btn:disabled {
+      opacity: .4;
+      cursor: default
+    }
+
+    #sc-results {
+      margin-top: 6px
+    }
+
+    .sc-ai-bubble {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 11px 13px;
+      font-size: 12px;
+      line-height: 1.6;
+      color: #94a3b8;
+      margin-bottom: 12px
+    }
+
+    .cmp-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+      margin-bottom: 12px
+    }
+
+    .cmp-col {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px
+    }
+
+    .cmp-col-t {
+      font-size: 9px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 7px;
+      font-family: 'Syne', sans-serif
+    }
+
+    .cmp-num {
+      font-size: 20px;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace
+    }
+
+    .cmp-sub {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 1px
+    }
+
+    .delta-banner {
+      border-radius: 8px;
+      padding: 10px 13px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px
+    }
+
+    .delta-banner.good {
+      background: #0f2918;
+      border: 1px solid #166534
+    }
+
+    .delta-banner.bad {
+      background: #1a0a0a;
+      border: 1px solid #7f1d1d
+    }
+
+    .delta-main {
+      font-size: 22px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace
+    }
+
+    .delta-banner.good .delta-main {
+      color: var(--green)
+    }
+
+    .delta-banner.bad .delta-main {
+      color: var(--red)
+    }
+
+    .delta-sub {
+      font-size: 10px;
+      margin-top: 1px
+    }
+
+    .delta-banner.good .delta-sub {
+      color: #4ade80
+    }
+
+    .delta-banner.bad .delta-sub {
+      color: #f87171
+    }
+
+    .delta-detail {
+      font-size: 10px;
+      color: var(--muted);
+      text-align: right
+    }
+
+    .pd-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 0;
+      border-bottom: 1px solid var(--border)
+    }
+
+    .pd-row:last-child {
+      border-bottom: none
+    }
+
+    .dp {
+      font-size: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      padding: 1px 7px;
+      border-radius: 9px
+    }
+
+    .dp.g {
+      background: #0f2918;
+      color: var(--green);
+      border: 1px solid #166534
+    }
+
+    .dp.r {
+      background: #1a0a0a;
+      color: var(--red);
+      border: 1px solid #7f1d1d
+    }
+
+    .dp.n {
+      background: var(--surface2);
+      color: var(--muted);
+      border: 1px solid var(--border2)
+    }
+
+    .res-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 10px
+    }
+
+    .res-row:last-child {
+      border-bottom: none
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <div id="hdr">
+    <div class="hdr-logo">
+      <div class="hdr-icon">V</div>
+      <div>
+        <div class="hdr-title">TESLA VEHICLE PARTS ORDER CHATBOT</div>
+        <div class="hdr-sub">Constraint Intelligence Engine</div>
+      </div>
+    </div>
+    <div class="hdr-right">
+      <div class="hdr-kpi"><span id="hkpi-total" style="color:#38bdf8">—</span> orders</div>
+      <div class="hdr-kpi"><span id="hkpi-con" style="color:#ef4444">—</span> constrained</div>
+      <div class="hdr-kpi"><span id="hkpi-rate" style="color:#f59e0b">—</span> rate</div>
+      <button id="scenario-toggle" onclick="toggleScenario()">⚡ What-If</button>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div id="body">
+
+    <!-- DASHBOARD -->
+    <div id="dash">
+      <div class="dash-hdr">Data Overview</div>
+      <div id="dash-scroll">
+
+        <!-- KPI Cards -->
+        <div class="kpi-grid" style="margin-top:14px">
+          <div class="kpi blue">
+            <div class="kpi-num" id="kpi-total" style="color:#38bdf8">—</div>
+            <div class="kpi-label">Total Orders</div>
+            <div class="kpi-sub" id="kpi-qty">— units</div>
+          </div>
+          <div class="kpi red">
+            <div class="kpi-num" id="kpi-con" style="color:#ef4444">—</div>
+            <div class="kpi-label">Constrained</div>
+            <div class="kpi-sub" id="kpi-rate">—%</div>
+          </div>
+          <div class="kpi green">
+            <div class="kpi-num" id="kpi-ful" style="color:#22c55e">—</div>
+            <div class="kpi-label">Fulfilled</div>
+            <div class="kpi-sub" id="kpi-ful-rate">—%</div>
+          </div>
+          <div class="kpi amber">
+            <div class="kpi-num" id="kpi-parts" style="color:#f59e0b">4</div>
+            <div class="kpi-label">Parts · 3 WHs</div>
+            <div class="kpi-sub">WH-1 DC · WH-4 DC</div>
+          </div>
+        </div>
+
+        <!-- Constraint Rate by Part — horizontal bar chart -->
+        <div class="sec">
+          <div class="sec-title">Constraint Rate by Part</div>
+          <div class="chart-wrap" style="padding:12px 14px">
+            <svg class="chart" id="chart-part" height="120"></svg>
+          </div>
+        </div>
+
+        <!-- Orders by Warehouse — grouped bar chart -->
+        <div class="sec">
+          <div class="sec-title">Orders by Warehouse</div>
+          <div class="chart-wrap" style="padding:12px 14px">
+            <svg class="chart" id="chart-wh" height="100"></svg>
+          </div>
+        </div>
+
+        <!-- Order Volume Timeline -->
+        <div class="sec">
+          <div class="sec-title">Order Volume Timeline</div>
+          <div class="chart-wrap" style="padding:12px 14px">
+            <svg class="chart" id="chart-tl" height="80"></svg>
+          </div>
+        </div>
+
+        <!-- Part Summary Table -->
+        <div class="sec">
+          <div class="sec-title">Part Summary</div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden">
+            <table class="dt" id="tbl-part">
+              <thead>
+                <tr>
+                  <th>Part</th>
+                  <th>Orders</th>
+                  <th>Total Qty</th>
+                  <th>Constrained</th>
+                  <th>Rate</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Warehouse Summary Table -->
+        <div class="sec">
+          <div class="sec-title">Warehouse Summary</div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden">
+            <table class="dt" id="tbl-wh">
+              <thead>
+                <tr>
+                  <th>Warehouse</th>
+                  <th>Orders</th>
+                  <th>Total Qty</th>
+                  <th>Constrained</th>
+                  <th>Rate</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Top Constrained Orders -->
+        <div class="sec">
+          <div class="sec-title">Highest-Qty Constrained Orders</div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden">
+            <table class="dt" id="tbl-top">
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Part</th>
+                  <th>WH</th>
+                  <th>Qty</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div style="height:20px"></div>
+      </div><!-- /dash-scroll -->
+    </div><!-- /dash -->
+
+    <!-- CHAT -->
+    <div id="chat">
+      <div id="messages"></div>
+      <div id="examples">
+        <button class="ex-btn" onclick="sendQuery(this.textContent)">Constrained VINs for Part D at WH-3?</button>
+        <button class="ex-btn" onclick="sendQuery(this.textContent)">5 pcs Part B at WH-1 — still constrained?</button>
+        <button class="ex-btn" onclick="sendQuery(this.textContent)">Total orders for Part A?</button>
+        <button class="ex-btn" onclick="sendQuery(this.textContent)">Summary of Warehouse 3</button>
+        <button class="ex-btn" onclick="sendQuery(this.textContent)">Highest constraint rate part?</button>
+      </div>
+      <div id="input-row">
+        <textarea id="query-input" rows="2" placeholder="Ask about constraints, inventory impact, order counts…"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendQuery()}"
+          oninput="updateSendBtn()"></textarea>
+        <button id="send-btn" class="inactive" onclick="sendQuery()">RUN →</button>
+      </div>
+    </div>
+
+    <!-- SCENARIO PANEL -->
+    <div id="sc-panel">
+      <div class="sc-hdr">
+        <div>
+          <div class="sc-title">⚡ WHAT-IF SCENARIO</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">Add inventory · compare before vs after</div>
+        </div>
+        <button class="sc-close" onclick="toggleScenario()">✕</button>
+      </div>
+      <div id="sc-body">
+        <div class="sc-sec">
+          <div class="sc-sec-title">Inventory Adjustments <span></span></div>
+          <div id="adj-list"></div>
+          <button class="add-adj" onclick="addAdjRow()">+ Add Adjustment</button>
+        </div>
+        <button class="run-btn" id="run-sc-btn" onclick="runScenario()" disabled>RUN SIMULATION →</button>
+        <div id="sc-results"></div>
+      </div>
+    </div>
+
+  </div><!-- /body -->
+
+  <script>
+    // ── Data injected from Flask ──
+    const D = {{ dashboard_data| safe }};
+    const INV_DEFAULT = {{ default_inventory| safe }};
+    const PARTS = {{ parts| safe }};
+    const WH_LBL = {{ wh_labels| safe }};
+    const PC = { 'Part A': '#38bdf8', 'Part B': '#a78bfa', 'Part C': '#34d399', 'Part D': '#fb923c' };
+    const WC = { 1: '#38bdf8', 2: '#a78bfa', 3: '#34d399' };
+
+    let inventory = JSON.parse(JSON.stringify(INV_DEFAULT));
+    let loading = false, scenarioOpen = false, adjCount = 0;
+
+    // ════════════════════════════════════
+    //  DASHBOARD RENDER
+    // ════════════════════════════════════
+    function initDashboard() {
+      const { total_orders: tot, total_constrained: con, total_fulfilled: ful,
+        constraint_rate: rate, total_qty: qty, by_part, by_wh, monthly, top_constrained } = D;
+
+      // Header KPIs
+      document.getElementById('hkpi-total').textContent = tot;
+      document.getElementById('hkpi-con').textContent = con;
+      document.getElementById('hkpi-rate').textContent = rate + '%';
+
+      // KPI cards
+      document.getElementById('kpi-total').textContent = tot;
+      document.getElementById('kpi-qty').textContent = qty.toLocaleString() + ' units';
+      document.getElementById('kpi-con').textContent = con;
+      document.getElementById('kpi-rate').textContent = rate + '%';
+      document.getElementById('kpi-ful').textContent = ful;
+      document.getElementById('kpi-ful-rate').textContent = (100 - rate).toFixed(1) + '%';
+
+      renderPartChart(by_part);
+      renderWhChart(by_wh);
+      renderTimeline(monthly);
+      renderPartTable(by_part);
+      renderWhTable(by_wh);
+      renderTopTable(top_constrained);
+    }
+
+    // ── Part bar chart (horizontal, stacked fulfilled/constrained) ──
+    function renderPartChart(by_part) {
+      const svg = document.getElementById('chart-part');
+      const W = svg.parentElement.clientWidth - 28;
+      const rowH = 26, pad = 4, labelW = 58, valW = 40;
+      const barW = W - labelW - valW - 8;
+      const parts = PARTS.filter(p => by_part[p] && by_part[p].total > 0);
+      const maxTot = Math.max(...parts.map(p => by_part[p].total));
+      svg.setAttribute('height', parts.length * (rowH + pad) + 10);
+
+      let html = '';
+      parts.forEach((p, i) => {
+        const d = by_part[p];
+        const y = i * (rowH + pad) + 4;
+        const fulW = Math.round((d.total - d.constrained) / maxTot * barW);
+        const conW = Math.round(d.constrained / maxTot * barW);
+        const rate = d.total ? Math.round(d.constrained / d.total * 100) : 0;
+        const rateColor = rate > 60 ? '#ef4444' : rate > 30 ? '#f59e0b' : '#22c55e';
+        html += `
+      <text x="0" y="${y + 15}" class="chart-label" style="fill:${PC[p]};font-weight:600">${p}</text>
+      <rect x="${labelW}" y="${y + 4}" width="${fulW}" height="${rowH - 8}" rx="3" fill="#22c55e" opacity=".7"/>
+      <rect x="${labelW + fulW}" y="${y + 4}" width="${conW}" height="${rowH - 8}" rx="3" fill="#ef4444" opacity=".8"/>
+      <text x="${labelW + fulW + conW + 6}" y="${y + 15}" class="chart-val">${d.constrained}/${d.total}</text>
+      <text x="${W - 2}" y="${y + 15}" class="chart-pct" text-anchor="end" fill="${rateColor}">${rate}%</text>`;
+      });
+      // Legend
+      html += `
+    <text x="${labelW}" y="${parts.length * (rowH + pad) + 18}" font-size="9" fill="#22c55e" font-family="JetBrains Mono,monospace">■ Fulfilled</text>
+    <text x="${labelW + 66}" y="${parts.length * (rowH + pad) + 18}" font-size="9" fill="#ef4444" font-family="JetBrains Mono,monospace">■ Constrained</text>`;
+      svg.innerHTML = html;
+      svg.setAttribute('height', parts.length * (rowH + pad) + 24);
+    }
+
+    // ── Warehouse grouped bar chart ──
+    function renderWhChart(by_wh) {
+      const svg = document.getElementById('chart-wh');
+      const W = svg.parentElement.clientWidth - 28;
+      const whs = ['1', '2', '3'];
+      const gW = Math.floor((W - 20) / 3);
+      const bW = Math.floor(gW * 0.38);
+      const maxV = Math.max(...whs.map(w => by_wh[w] ? by_wh[w].total : 0));
+      const H = 80;
+
+      let html = '';
+      whs.forEach((w, i) => {
+        const d = by_wh[w] || { total: 0, constrained: 0 };
+        const x = i * gW + 10;
+        const fulH = maxV ? Math.round((d.total - d.constrained) / maxV * (H - 28)) : 0;
+        const conH = maxV ? Math.round(d.constrained / maxV * (H - 28)) : 0;
+        const col = WC[+w];
+        // Two bars: fulfilled + constrained side by side
+        html += `
+      <rect x="${x}" y="${H - 28 - fulH}" width="${bW}" height="${fulH}" rx="2" fill="${col}" opacity=".6"/>
+      <rect x="${x + bW + 2}" y="${H - 28 - conH}" width="${bW}" height="${conH}" rx="2" fill="#ef4444" opacity=".75"/>
+      <text x="${x + bW}" y="${H - 12}" font-size="9" fill="${col}" font-family="JetBrains Mono,monospace" text-anchor="middle">${WH_LBL[w] || 'WH-' + w}</text>
+      <text x="${x + bW}" y="${H - 2}" font-size="9" fill="#64748b" font-family="JetBrains Mono,monospace" text-anchor="middle">${d.total}</text>`;
+      });
+      // Legend
+      html += `
+    <text x="${W - 110}" y="${H}" font-size="8" fill="#64748b" font-family="JetBrains Mono,monospace">■ Fulfilled  ■ Constrained</text>`;
+      svg.innerHTML = html;
+    }
+
+    // ── Monthly timeline ──
+    function renderTimeline(monthly) {
+      const svg = document.getElementById('chart-tl');
+      const W = svg.parentElement.clientWidth - 28;
+      const H = 70;
+      if (!monthly.length) return;
+      const maxC = Math.max(...monthly.map(m => m.count));
+      const bW = Math.max(4, Math.floor((W - 10) / monthly.length) - 2);
+
+      let html = '';
+      monthly.forEach((m, i) => {
+        const x = 5 + i * (bW + 2);
+        const h = maxC ? Math.round(m.count / maxC * (H - 24)) : 0;
+        const y = H - 18 - h;
+        const col = m.count > maxC * 0.7 ? '#38bdf8' : m.count > maxC * 0.3 ? '#6366f1' : '#1e3a5f';
+        html += `<rect class="tl-bar" x="${x}" y="${y}" width="${bW}" height="${h}" rx="2" fill="${col}">
+      <title>${m.month}: ${m.count} orders</title></rect>`;
+        // Show label every 3rd bar or if few bars
+        if (monthly.length <= 8 || i % Math.ceil(monthly.length / 6) === 0) {
+          const label = m.month.split(' ')[0]; // "Jan"
+          html += `<text x="${x + bW / 2}" y="${H}" font-size="8" fill="#475569" text-anchor="middle"
+                     font-family="JetBrains Mono,monospace">${label}</text>`;
+        }
+      });
+      svg.innerHTML = html;
+    }
+
+    // ── Part summary table ──
+    function renderPartTable(by_part) {
+      const tbody = document.querySelector('#tbl-part tbody');
+      tbody.innerHTML = '';
+      PARTS.forEach(p => {
+        const d = by_part[p];
+        if (!d || !d.total) return;
+        const rate = Math.round(d.constrained / d.total * 100);
+        const rCls = rate > 60 ? 'pill-red' : rate > 30 ? 'pill-amb' : 'pill-grn';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+      <td><span class="badge" style="background:${PC[p]}22;color:${PC[p]};border:1px solid ${PC[p]}44">${p}</span></td>
+      <td class="mono">${d.total}</td>
+      <td class="mono">${d.total_qty.toLocaleString()}</td>
+      <td class="mono" style="color:#ef4444">${d.constrained}</td>
+      <td><span class="badge ${rCls}">${rate}%</span></td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ── Warehouse summary table ──
+    function renderWhTable(by_wh) {
+      const tbody = document.querySelector('#tbl-wh tbody');
+      tbody.innerHTML = '';
+      ['1', '2', '3'].forEach(w => {
+        const d = by_wh[w];
+        if (!d || !d.total) return;
+        const rate = Math.round(d.constrained / d.total * 100);
+        const rCls = rate > 60 ? 'pill-red' : rate > 30 ? 'pill-amb' : 'pill-grn';
+        const col = WC[+w];
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+      <td><span class="badge" style="background:${col}22;color:${col};border:1px solid ${col}44">${WH_LBL[w] || 'WH-' + w}</span></td>
+      <td class="mono">${d.total}</td>
+      <td class="mono">${d.total_qty.toLocaleString()}</td>
+      <td class="mono" style="color:#ef4444">${d.constrained}</td>
+      <td><span class="badge ${rCls}">${rate}%</span></td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ── Top constrained orders table ──
+    function renderTopTable(orders) {
+      const tbody = document.querySelector('#tbl-top tbody');
+      tbody.innerHTML = '';
+      orders.forEach(o => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+      <td class="mono" style="color:#64748b">#${o.id}</td>
+      <td><span class="badge" style="background:${PC[o.part] || '#94a3b8'}22;color:${PC[o.part] || '#94a3b8'};border:1px solid ${PC[o.part] || '#94a3b8'}44">${o.part}</span></td>
+      <td class="mono">WH-${o.wh}</td>
+      <td class="mono" style="color:#f59e0b;font-weight:600">${o.qty}</td>
+      <td style="font-size:10px;color:#475569">${o.date}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ════════════════════════════════════
+    //  SCENARIO PANEL
+    // ════════════════════════════════════
+    function toggleScenario() {
+      scenarioOpen = !scenarioOpen;
+      document.getElementById('sc-panel').classList.toggle('open', scenarioOpen);
+    }
+
+    function addAdjRow(part = 'Part D', wh = 3, qd = 20, td = 0) {
+      adjCount++;
+      const id = `adj-${adjCount}`;
+      const pOpts = PARTS.map(p => `<option value="${p}"${p === part ? ' selected' : ''}>${p}</option>`).join('');
+      const wOpts = [1, 2, 3, 4].map(w => `<option value="${w}"${w === wh ? ' selected' : ''}>${WH_LBL[w]}</option>`).join('');
+      const div = document.createElement('div');
+      div.className = 'adj-row'; div.id = id;
+      div.innerHTML = `
+    <select class="adj-sel ap">${pOpts}</select>
+    <select class="adj-sel aw" style="flex:.7">${wOpts}</select>
+    <div style="display:flex;flex-direction:column;gap:2px;align-items:center">
+      <span class="adj-lbl">+On-Hand</span>
+      <input class="adj-num aq" type="number" value="${qd}" min="-999"/>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:2px;align-items:center">
+      <span class="adj-lbl">+Transit</span>
+      <input class="adj-num tr at" type="number" value="${td}" min="-999"/>
+    </div>
+    <button class="adj-rm" onclick="document.getElementById('${id}').remove();checkRunBtn()">✕</button>`;
+      document.getElementById('adj-list').appendChild(div);
+      div.querySelectorAll('input,select').forEach(el => el.addEventListener('change', checkRunBtn));
+      checkRunBtn();
+    }
+
+    function checkRunBtn() {
+      document.getElementById('run-sc-btn').disabled =
+        document.getElementById('adj-list').children.length === 0;
+    }
+
+    function getAdjustments() {
+      return [...document.getElementById('adj-list').children].map(r => ({
+        part: r.querySelector('.ap').value,
+        wh: +r.querySelector('.aw').value,
+        qty_delta: +r.querySelector('.aq').value,
+        transit_delta: +r.querySelector('.at').value,
+      }));
+    }
+
+    async function runScenario() {
+      const btn = document.getElementById('run-sc-btn');
+      btn.disabled = true; btn.textContent = 'RUNNING…';
+      const res = document.getElementById('sc-results');
+      res.innerHTML = `<div style="padding:18px;text-align:center;color:#475569">
+    <div class="typing" style="justify-content:center;margin-bottom:8px">
+      <div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+    Running simulation…</div>`;
+      try {
+        const r = await fetch('/api/scenario', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ baseline_inventory: inventory, adjustments: getAdjustments(), generate_ai: true })
+        });
+        const data = await r.json();
+        if (data.error) throw new Error(data.error);
+        renderScResult(data);
+      } catch (e) {
+        res.innerHTML = `<div style="color:#ef4444;padding:12px;font-size:12px">Error: ${esc(e.message)}</div>`;
+      } finally {
+        btn.disabled = false; btn.textContent = 'RUN SIMULATION →'; checkRunBtn();
+      }
+    }
+
+    function renderScResult(d) {
+      const isGood = d.delta.constrained <= 0;
+      const adjHtml = d.adjustments.map(a => {
+        const pts = [];
+        if (a.qty_delta !== 0) pts.push(`${a.qty_delta > 0 ? '+' : ''}${a.qty_delta} on-hand`);
+        if (a.transit_delta !== 0) pts.push(`${a.transit_delta > 0 ? '+' : ''}${a.transit_delta} transit`);
+        return `<div style="font-size:11px;color:#94a3b8;padding:3px 0;border-bottom:1px solid #0d1526">
+      <span class="badge" style="background:${PC[a.part] || '#94a3b8'}22;color:${PC[a.part] || '#94a3b8'};border:1px solid ${PC[a.part] || '#94a3b8'}44">${a.part}</span>
+      <span style="color:#64748b;margin:0 4px">@</span>
+      <span>${a.wh_label}</span>
+      <span style="color:#475569;margin-left:5px">${pts.join(', ')}</span></div>`;
+      }).join('');
+
+      const partRows = d.part_delta.filter(p => p.total > 0).map(p => {
+        const cls = p.delta < 0 ? 'g' : p.delta > 0 ? 'r' : 'n';
+        return `<div class="pd-row">
+      <span class="badge" style="background:${PC[p.part]}22;color:${PC[p.part]};border:1px solid ${PC[p.part]}44">${p.part}</span>
+      <span style="font-size:10px;color:#64748b">${p.base_constrained} → ${p.scen_constrained}</span>
+      <span class="dp ${cls}">${p.delta > 0 ? '+' : ''}${p.delta}</span></div>`;
+      }).join('');
+
+      const resRows = d.newly_resolved.slice(0, 12).map(o =>
+        `<div class="res-row">
+      <span class="mono" style="color:#64748b">#${o.id}</span>
+      <span class="badge" style="background:${PC[o.part] || '#fff'}22;color:${PC[o.part] || '#fff'};border:1px solid ${PC[o.part] || '#fff'}44">${o.part}</span>
+      <span style="color:#475569">WH-${o.wh}</span>
+      <span style="color:#22c55e" class="mono">via ${o.resolved_by || '?'}</span></div>`
+      ).join('');
+
+      document.getElementById('sc-results').innerHTML = `
+    ${d.ai_summary ? `<div class="sc-ai-bubble">${esc(d.ai_summary)}</div>` : ''}
+    <div class="sc-sec-title" style="margin-top:6px">Applied <span></span></div>
+    <div style="background:#0d1526;border:1px solid #1a2744;border-radius:8px;padding:8px 11px;margin-bottom:12px">${adjHtml}</div>
+    <div class="delta-banner ${isGood ? 'good' : 'bad'}">
+      <div>
+        <div class="delta-main">${isGood ? '▼' : '▲'} ${Math.abs(d.delta.constrained)}</div>
+        <div class="delta-sub">${isGood ? d.delta.resolved + ' orders resolved' : d.delta.broken + ' newly constrained'}</div>
+      </div>
+      <div class="delta-detail">Before: ${d.baseline.constrained}<br>After: ${d.scenario.constrained}</div>
+    </div>
+    <div class="cmp-grid">
+      <div class="cmp-col">
+        <div class="cmp-col-t">Before</div>
+        <div class="cmp-num" style="color:#ef4444">${d.baseline.constrained}</div><div class="cmp-sub">constrained</div>
+        <div class="cmp-num" style="color:#22c55e;font-size:16px;margin-top:6px">${d.baseline.unconstrained}</div><div class="cmp-sub">fulfilled</div>
+      </div>
+      <div class="cmp-col">
+        <div class="cmp-col-t">After</div>
+        <div class="cmp-num" style="color:${isGood ? '#22c55e' : '#ef4444'}">${d.scenario.constrained}</div><div class="cmp-sub">constrained</div>
+        <div class="cmp-num" style="color:#22c55e;font-size:16px;margin-top:6px">${d.scenario.unconstrained}</div><div class="cmp-sub">fulfilled</div>
+      </div>
+    </div>
+    <div class="sc-sec-title" style="margin-top:10px">By Part <span></span></div>
+    <div style="background:#0d1526;border:1px solid #1a2744;border-radius:8px;padding:8px 11px;margin-bottom:12px">${partRows}</div>
+    ${d.newly_resolved.length ? `
+    <div class="sc-sec-title">Resolved Orders <span></span></div>
+    <div style="background:#0d1526;border:1px solid #1a2744;border-radius:8px;padding:8px 11px;max-height:180px;overflow-y:auto">
+      ${resRows}
+      ${d.newly_resolved.length > 12 ? `<div style="font-size:9px;color:#475569;margin-top:4px;text-align:right">…and ${d.newly_resolved.length - 12} more</div>` : ''}
+    </div>`: ''}`;
+    }
+
+    // ════════════════════════════════════
+    //  CHAT
+    // ════════════════════════════════════
+    function updateSendBtn() {
+      const has = document.getElementById('query-input').value.trim().length > 0;
+      document.getElementById('send-btn').className = (!loading && has) ? 'active' : 'inactive';
+    }
+
+    function appendMsg(role, content, analysis) {
+      const feed = document.getElementById('messages');
+      const div = document.createElement('div');
+      div.className = `msg ${role}`;
+      if (role === 'user') {
+        div.innerHTML = `<div class="bubble user">${esc(content)}</div>`;
+      } else {
+        let html = `<div class="bot-meta"><div class="bot-icon">V</div>
+      <span class="bot-name">Analytics Engine</span></div>
+      <div class="bubble bot">${content.loading
+            ? `<div class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`
+            : esc(content.text || content)}</div>`;
+        if (analysis) html += buildACard(analysis);
+        div.innerHTML = html;
+      }
+      feed.appendChild(div);
+      div.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      return div;
+    }
+
+    function buildACard(a) {
+      const f = a.filtered, pct = f.total > 0 ? Math.round(f.constrained / f.total * 100) : 0;
+      const cFor = n => n > 60 ? '#ef4444' : n > 30 ? '#f59e0b' : '#22c55e';
+      const bars = a.by_part.filter(p => p.total > 0).map(p => {
+        const r = p.total ? Math.round(p.constrained / p.total * 100) : 0;
+        return `<div class="bar-row">
+      <div class="bar-meta">
+        <span class="badge" style="background:${PC[p.part]}22;color:${PC[p.part]};border:1px solid ${PC[p.part]}44">${p.part}</span>
+        <span style="font-size:10px;color:#64748b;font-family:monospace">${p.constrained}/${p.total} (${r}%)</span>
+      </div>
+      <div class="bar-track"><div class="bar-fill" style="width:${r}%;background:${cFor(r)}"></div></div>
+    </div>`;
+      }).join('');
+      const orders = a.constrained_orders || [];
+      const trows = orders.map(o => {
+        const tr = (o.trace || []).map(t => `<span class="trace-chip">
+      <span style="color:${PC[t.part] || '#94a3b8'}">${t.part}</span>:${t.at_wh}${t.at_parent != null ? '/' + t.at_parent : ''}</span>`).join('');
+        return `<tr>
+      <td class="mono">${o.id}</td><td>${o.date_str}</td>
+      <td><span class="badge" style="background:${PC[o.part] || '#94a3b8'}22;color:${PC[o.part] || '#94a3b8'};border:1px solid ${PC[o.part] || '#94a3b8'}44">${o.part}</span></td>
+      <td class="mono">WH-${o.wh}</td>
+      <td class="mono" style="color:#f59e0b">${o.qty}</td>
+      <td>${tr}</td></tr>`;
+      }).join('');
+      const detId = `d-${Math.random().toString(36).slice(2)}`;
+      return `<div class="acard">
+    <div class="stat-row">
+      <div class="stat-box"><div class="stat-num" style="color:#38bdf8">${f.total}</div><div class="stat-lbl">Total</div></div>
+      <div class="stat-box"><div class="stat-num" style="color:#ef4444">${f.constrained}</div><div class="stat-lbl">Constrained</div></div>
+      <div class="stat-box"><div class="stat-num" style="color:#22c55e">${f.unconstrained}</div><div class="stat-lbl">Fulfilled</div></div>
+      ${f.total > 0 ? `<div class="stat-box"><div class="stat-num" style="color:#f59e0b">${pct}%</div><div class="stat-lbl">Rate</div></div>` : ''}
+    </div>
+    <div style="font-size:9px;color:#475569;text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px;font-family:'Syne',sans-serif">By Part</div>
+    ${bars}
+    ${orders.length ? `
+    <button class="expand-btn" onclick="toggleDet('${detId}',this)"><span>▶</span> Show allocation trace</button>
+    <div id="${detId}" style="display:none">
+      <div style="overflow-x:auto">
+        <table class="dtbl">
+          <thead><tr><th>ID</th><th>Date</th><th>Part</th><th>WH</th><th>Qty</th><th>Trace</th></tr></thead>
+          <tbody>${trows}</tbody>
+        </table>
+        ${orders.length >= 20 ? '<div style="font-size:9px;color:#475569;margin-top:3px;text-align:right">First 20 shown</div>' : ''}
+      </div>
+    </div>`: ''}
+  </div>`;
+    }
+
+    function toggleDet(id, btn) {
+      const el = document.getElementById(id), open = el.style.display !== 'none';
+      el.style.display = open ? 'none' : 'block';
+      btn.querySelector('span').textContent = open ? '▶' : '▼';
+      btn.childNodes[1].textContent = (open ? ' Show' : ' Hide') + ' allocation trace';
+    }
+
+    async function sendQuery(override) {
+      const inp = document.getElementById('query-input');
+      const q = (override || inp.value).trim();
+      if (!q || loading) return;
+      inp.value = ''; updateSendBtn(); setLoading(true);
+      appendMsg('user', q);
+      const botDiv = appendMsg('bot', { loading: true }, null);
+      try {
+        const r = await fetch('/api/chat', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: q, inventory })
+        });
+        const data = await r.json();
+        if (data.error) throw new Error(data.error);
+        botDiv.querySelector('.bubble.bot').textContent = data.response;
+        const card = document.createElement('div');
+        card.innerHTML = buildACard(data.analysis);
+        botDiv.appendChild(card.firstElementChild);
+        botDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      } catch (e) {
+        const b = botDiv.querySelector('.bubble.bot');
+        b.textContent = `Error: ${e.message}`; b.style.color = '#ef4444';
+      } finally { setLoading(false); }
+    }
+
+    function setLoading(v) {
+      loading = v;
+      document.querySelectorAll('.ex-btn').forEach(b => b.disabled = v);
+      updateSendBtn();
+    }
+    function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+    // ── INIT ──
+    initDashboard();
+    addAdjRow('Part D', 3, 20, 0);
+    appendMsg('bot', { text: 'Welcome to TESLA Vehicle Parts Order Chatbot. The dashboard on the left shows a full data overview — constraints by part, warehouse breakdown, and order timeline. Ask me anything about constrained VINs, or use ⚡ What-If to simulate inventory changes.' }, null);
+  </script>
+</body>
+
+</html>
