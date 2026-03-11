@@ -14,7 +14,7 @@ The backend application has modular components to cleanly separate concerns:
 - `algorithm.py`: The core constraint engine logic. Simulates sequentially deducting from inventory maps iteratively over active orders. Also includes scenario analysis logic to compute the net-impact of manual inventory adjustments before they occur in the real world, which helps in simulating inventory changes.
 - `llm.py`: A wrapper module connecting the application to Anthropic's Claude framework. It defines internal system prompts required for Natural Language Understanding (NLU) to pull constraints out of chat prompts, and builds natural-language summaries based on the algorithm outputs.
 
-- `templates/index.html`: The HTML frontend containing CSS and Javascript logic. Provides the interactive dashboard, chat window, and interactive "What-If" scenario tool.
+- `index.html`: The HTML frontend containing CSS and Javascript logic. Provides the interactive dashboard, chat window, and interactive "What-If" scenario tool.
 
 ## Prerequisites
 
